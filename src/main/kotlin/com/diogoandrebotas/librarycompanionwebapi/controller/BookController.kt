@@ -1,6 +1,7 @@
 package com.diogoandrebotas.librarycompanionwebapi.controller
 
 import com.diogoandrebotas.librarycompanionwebapi.model.Book
+import com.diogoandrebotas.librarycompanionwebapi.model.BookInput
 import com.diogoandrebotas.librarycompanionwebapi.service.BookService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -25,7 +26,7 @@ class BookController(
     fun getBookById(@PathVariable id: Long) = bookService.getBookById(id)
 
     @PostMapping("/books")
-    fun addBook(@RequestBody book: Book) = bookService.addBook(book)
+    fun addBookWithIsbn(@RequestBody bookInput: BookInput) = bookService.addBookWithIsbn(bookInput)
 
     @PutMapping("/books/{id}")
     fun updateBook(@PathVariable id: Long, @RequestBody book: Book) = bookService.updateBook(id, book)
