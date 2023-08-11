@@ -11,7 +11,8 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class HttpClientConfig {
 
-    private final val httpClient = HttpClient(CIO) {
+    @Bean
+    fun httpClient() = HttpClient(CIO) {
         install(ContentNegotiation) {
             json(
                 Json {
@@ -20,8 +21,5 @@ class HttpClientConfig {
             )
         }
     }
-
-    @Bean
-    fun getHttpClient() = httpClient
 
 }

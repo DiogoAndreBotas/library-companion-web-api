@@ -31,6 +31,8 @@ dependencies {
 	implementation("io.ktor:ktor-client-cio:$ktorVersion")
 	implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
 	implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
+	implementation("aws.sdk.kotlin:s3-jvm:0.29.1-beta")
+	implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.11")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
