@@ -11,8 +11,8 @@ class Book(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long = -1,
     val title: String = "",
-    val author: String = "",
+    val authors: List<String> = emptyList(),
     val pages: Int = -1,
     val isbn: String = "",
-    val imageUrl: String = ""
+    val publishDate: String = ""
 )

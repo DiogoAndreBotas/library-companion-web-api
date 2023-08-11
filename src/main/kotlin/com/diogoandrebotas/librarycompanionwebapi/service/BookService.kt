@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class BookService(
-    private val googleBooksService: GoogleBooksService,
+    private val openLibraryService: OpenLibraryService,
     private val bookRepository: BookRepository
 ) {
 
@@ -15,23 +15,28 @@ class BookService(
 
     fun getBookById(id: Long) = bookRepository.findById(id)
 
-    fun addBookWithIsbn(bookInput: BookInput): List<Book> {
+    fun addBookWithIsbn(bookInput: BookInput): Book {
         val isbn = bookInput.isbn
 
         if (bookRepository.findByIsbn(isbn).isPresent)
             throw Exception("Book already exists in database")
 
-        return googleBooksService.getBookWithIsbn(isbn).items.map {
-            bookRepository.save(
-                Book(
-                    title = it.volumeInfo.title,
-                    author = it.volumeInfo.authors.joinToString(separator = ", "),
-                    pages = it.volumeInfo.pageCount,
-                    isbn = isbn,
-                    imageUrl = it.volumeInfo.imageLinks.thumbnail
-                )
-            )
+        val bookResponse = openLibraryService.getBookWithIsbn(isbn)
+        val authors = bookResponse.authors.map {
+            openLibraryService.getAuthorWithKey(it.key).name
         }
+
+        openLibraryService.getCoverWithId(bookResponse.covers.first(), isbn)
+
+        return bookRepository.save(
+            Book(
+                title = bookResponse.title,
+                authors = authors,
+                pages = bookResponse.numberOfPages,
+                isbn = isbn,
+                publishDate = bookResponse.publishDate
+            )
+        )
     }
 
     fun updateBook(id: Long, updatedBook: Book): Book {
@@ -40,5 +45,4 @@ class BookService(
     }
 
     fun deleteBook(id: Long) = bookRepository.deleteById(id)
-
 }
