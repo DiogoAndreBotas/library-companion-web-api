@@ -1,15 +1,14 @@
 package com.diogoandrebotas.librarycompanionwebapi.service
 
-import aws.sdk.kotlin.services.s3.S3Client
 import aws.sdk.kotlin.services.s3.model.PutObjectRequest
 import aws.smithy.kotlin.runtime.content.ByteStream
+import com.diogoandrebotas.librarycompanionwebapi.config.S3Config
 import org.springframework.stereotype.Service
 
 @Service
 class S3Service(
-    private val client: S3Client
+    private val s3Config: S3Config
 ) {
-
     companion object {
         const val BUCKET_NAME = "library-companion-api-images"
     }
@@ -22,6 +21,6 @@ class S3Service(
             body = ByteStream.fromBytes(byteArray)
         }
 
-        client.use { it.putObject(request) }
+        s3Config.client().use { it.putObject(request) }
     }
 }

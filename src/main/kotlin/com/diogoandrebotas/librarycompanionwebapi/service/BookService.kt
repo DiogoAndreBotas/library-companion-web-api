@@ -3,6 +3,7 @@ package com.diogoandrebotas.librarycompanionwebapi.service
 import com.diogoandrebotas.librarycompanionwebapi.model.Book
 import com.diogoandrebotas.librarycompanionwebapi.model.BookInput
 import com.diogoandrebotas.librarycompanionwebapi.repository.BookRepository
+import kotlinx.coroutines.runBlocking
 import org.springframework.stereotype.Service
 
 @Service
@@ -22,11 +23,10 @@ class BookService(
             throw Exception("Book already exists in database")
 
         val bookResponse = openLibraryService.getBookWithIsbn(isbn)
-        val authors = bookResponse.authors.map {
-            openLibraryService.getAuthorWithKey(it.key).name
-        }
 
-        openLibraryService.getCoverWithId(bookResponse.covers.first(), isbn)
+        val authors = runBlocking {
+            openLibraryService.getAuthorsAndUploadCoverToS3(bookResponse, isbn)
+        }
 
         return bookRepository.save(
             Book(

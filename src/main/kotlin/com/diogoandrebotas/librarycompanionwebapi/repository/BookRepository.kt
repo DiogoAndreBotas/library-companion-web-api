@@ -7,7 +7,5 @@ import java.util.*
 
 @Repository
 interface BookRepository : JpaRepository<Book, Long> {
-
     fun findByIsbn(isbn: String): Optional<Book>
-
 }
