@@ -1,7 +1,9 @@
 package com.diogoandrebotas.librarycompanionwebapi.service
 
+import aws.sdk.kotlin.services.s3.model.GetObjectRequest
 import aws.sdk.kotlin.services.s3.model.PutObjectRequest
 import aws.smithy.kotlin.runtime.content.ByteStream
+import aws.smithy.kotlin.runtime.content.toByteArray
 import com.diogoandrebotas.librarycompanionwebapi.config.S3Config
 import org.springframework.stereotype.Service
 
@@ -22,5 +24,18 @@ class S3Service(
         }
 
         s3Config.client().use { it.putObject(request) }
+    }
+
+    suspend fun getImage(isbn: String): ByteArray? {
+        val request = GetObjectRequest {
+            bucket = BUCKET_NAME
+            key = "${isbn}.jpg"
+        }
+
+        return s3Config.client().use { client ->
+            client.getObject(request) {
+                it.body?.toByteArray()
+            }
+        }
     }
 }
