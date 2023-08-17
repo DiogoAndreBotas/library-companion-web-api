@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class S3Service(
-    private val s3Config: S3Config
+    private val client: S3Client
 ) {
     companion object {
         const val BUCKET_NAME = "library-companion-api-images"
