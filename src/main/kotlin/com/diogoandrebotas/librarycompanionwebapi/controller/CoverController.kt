@@ -14,12 +14,15 @@ class CoverController(
     private val coverService: CoverService
 ) {
     @GetMapping("/covers/{isbn}", produces = ["image/jpeg"])
-    fun getCover(@PathVariable isbn: String): ResponseEntity<ByteArray?> {
-        val body = coverService.getCover(isbn)
+    fun getCover(@PathVariable isbn: String): ResponseEntity<ByteArray> {
+        val cover = coverService.getCover(isbn)
 
-        return ResponseEntity
-            .ok()
-            .contentType(MediaType.IMAGE_JPEG)
-            .body(body)
+        return if (cover.isEmpty)
+            ResponseEntity.notFound().build()
+        else
+            ResponseEntity
+                .ok()
+                .contentType(MediaType.IMAGE_JPEG)
+                .body(cover.get())
     }
 }
