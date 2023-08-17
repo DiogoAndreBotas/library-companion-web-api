@@ -18,15 +18,28 @@ import org.springframework.web.bind.annotation.RestController
 class BookController(
     private val bookService: BookService
 ) {
-
     @GetMapping("/books")
     fun getBooks() = bookService.getBooks()
 
     @GetMapping("/books/{id}")
-    fun getBookById(@PathVariable id: Long) = bookService.getBookById(id)
+    fun getBookById(@PathVariable id: Long): ResponseEntity<Book> {
+        val book = bookService.getBookById(id)
+
+        return if (book.isEmpty)
+            ResponseEntity.notFound().build()
+        else
+            ResponseEntity.ok(book.get())
+    }
 
     @PostMapping("/books")
-    fun addBookWithIsbn(@RequestBody bookInput: BookInput) = bookService.addBookWithIsbn(bookInput)
+    fun addBookWithIsbn(@RequestBody bookInput: BookInput): ResponseEntity<Book> {
+        val book = bookService.addBookWithIsbn(bookInput)
+
+        return if (book.isEmpty)
+            ResponseEntity.unprocessableEntity().build()
+        else
+            ResponseEntity.ok(book.get())
+    }
 
     @PutMapping("/books/{id}")
     fun updateBook(@PathVariable id: Long, @RequestBody book: Book) = bookService.updateBook(id, book)
@@ -36,5 +49,4 @@ class BookController(
         bookService.deleteBook(id)
         return ResponseEntity.noContent().build()
     }
-
 }
