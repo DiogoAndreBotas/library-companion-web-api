@@ -3,6 +3,6 @@ package com.diogoandrebotas.librarycompanionwebapi.model
 import kotlinx.serialization.Serializable
 
 @Serializable
-class BookInput(
+class IsbnInput(
     val isbn: String
 )

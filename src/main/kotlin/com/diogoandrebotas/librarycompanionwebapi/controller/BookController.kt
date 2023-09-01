@@ -1,7 +1,7 @@
 package com.diogoandrebotas.librarycompanionwebapi.controller
 
 import com.diogoandrebotas.librarycompanionwebapi.model.Book
-import com.diogoandrebotas.librarycompanionwebapi.model.BookInput
+import com.diogoandrebotas.librarycompanionwebapi.model.IsbnInput
 import com.diogoandrebotas.librarycompanionwebapi.service.BookService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -21,9 +21,9 @@ class BookController(
     @GetMapping("/books")
     fun getBooks() = bookService.getBooks()
 
-    @GetMapping("/books/{id}")
-    fun getBookById(@PathVariable id: Long): ResponseEntity<Book> {
-        val book = bookService.getBookById(id)
+    @GetMapping("/books/{isbn}")
+    fun getBookById(@PathVariable isbn: String): ResponseEntity<Book> {
+        val book = bookService.getBook(isbn)
 
         return if (book.isEmpty)
             ResponseEntity.notFound().build()
@@ -32,8 +32,8 @@ class BookController(
     }
 
     @PostMapping("/books")
-    fun addBookWithIsbn(@RequestBody bookInput: BookInput): ResponseEntity<Book> {
-        val book = bookService.addBookWithIsbn(bookInput)
+    fun addBookWithIsbn(@RequestBody isbnInput: IsbnInput): ResponseEntity<Book> {
+        val book = bookService.addBookWithIsbn(isbnInput)
 
         return if (book.isEmpty)
             ResponseEntity.unprocessableEntity().build()
@@ -41,12 +41,12 @@ class BookController(
             ResponseEntity.ok(book.get())
     }
 
-    @PutMapping("/books/{id}")
-    fun updateBook(@PathVariable id: Long, @RequestBody book: Book) = bookService.updateBook(id, book)
+    @PutMapping("/books/{isbn}")
+    fun updateBook(@PathVariable isbn: String, @RequestBody book: Book) = bookService.updateBook(isbn, book)
 
-    @DeleteMapping("/books/{id}")
-    fun deleteBook(@PathVariable id: Long): ResponseEntity<Void> {
-        bookService.deleteBook(id)
+    @DeleteMapping("/books/{isbn}")
+    fun deleteBook(@PathVariable isbn: String): ResponseEntity<Void> {
+        bookService.deleteBook(isbn)
         return ResponseEntity.noContent().build()
     }
 }
