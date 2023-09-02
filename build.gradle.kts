@@ -34,6 +34,10 @@ dependencies {
 	implementation("aws.sdk.kotlin:s3-jvm:0.29.1-beta")
 	implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.11")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
+	testImplementation("org.mockito:mockito-core:5.5.0")
+	testImplementation("org.mockito:mockito-junit-jupiter:5.5.0")
+	testImplementation("org.mockito.kotlin:mockito-kotlin:5.1.0")
 }
 
 tasks.withType<KotlinCompile> {
