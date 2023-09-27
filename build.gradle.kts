@@ -38,6 +38,7 @@ dependencies {
 	testImplementation("org.mockito:mockito-core:5.5.0")
 	testImplementation("org.mockito:mockito-junit-jupiter:5.5.0")
 	testImplementation("org.mockito.kotlin:mockito-kotlin:5.1.0")
+	testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
 }
 
 tasks.withType<KotlinCompile> {

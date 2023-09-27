@@ -9,12 +9,12 @@ data class GoogleBooksResponse(
 )
 
 @Serializable
-class GoogleBooksItem(
+data class GoogleBooksItem(
     val volumeInfo: GoogleBooksVolumeInfo
 )
 
 @Serializable
-class GoogleBooksVolumeInfo(
+data class GoogleBooksVolumeInfo(
     val title: String,
     val authors: List<String>,
     val publishedDate: String,
@@ -23,6 +23,6 @@ class GoogleBooksVolumeInfo(
 )
 
 @Serializable
-class GoogleBooksImageLinks(
+data class GoogleBooksImageLinks(
     val thumbnail: String
 )
