@@ -1,5 +1,6 @@
 package com.diogoandrebotas.librarycompanionwebapi.service
 
+import com.diogoandrebotas.librarycompanionwebapi.exception.BookAlreadyExistsException
 import com.diogoandrebotas.librarycompanionwebapi.model.Book
 import com.diogoandrebotas.librarycompanionwebapi.model.IsbnInput
 import com.diogoandrebotas.librarycompanionwebapi.repository.BookRepository
@@ -13,24 +14,20 @@ class BookService(
 ) {
     fun getBooks(): List<Book> = bookRepository.findAll()
 
-    fun getBook(isbn: String) = bookRepository.findById(isbn)
+    fun getBook(isbn: String): Optional<Book> = bookRepository.findById(isbn)
 
     fun addBookWithIsbn(isbnInput: IsbnInput): Optional<Book> {
         val isbn = isbnInput.isbn
-        val book = bookRepository.findById(isbn)
 
-        if (book.isPresent)
-            return book
+        if (bookRepository.findById(isbn).isPresent)
+            throw BookAlreadyExistsException("Book with ISBN $isbn already exists")
 
         val books = googleBooksService.getBookWithIsbn(isbn)
 
         if (books.items.isEmpty())
             return Optional.empty()
 
-        // Assume there is only one book with the given ISBN
         val bookResponse = books.items.first().volumeInfo
-
-        googleBooksService.uploadCoverToS3(isbn, bookResponse.imageLinks.thumbnail)
 
         return Optional.of(
             bookRepository.save(
@@ -39,15 +36,12 @@ class BookService(
                     authors = bookResponse.authors,
                     pages = bookResponse.pageCount,
                     isbn = isbn,
-                    publishDate = bookResponse.publishedDate
+                    publishDate = bookResponse.publishedDate,
+                    imageUrl = bookResponse.imageLinks.thumbnail
                 )
             )
         )
     }
 
-    fun updateBook(isbn: String, updatedBook: Book): Book {
-        return bookRepository.save(updatedBook)
-    }
-
-    fun deleteBook(isbn: String) = bookRepository.deleteById(isbn)
+    fun deleteBook(isbn: String): Unit = bookRepository.deleteById(isbn)
 }

@@ -1,5 +1,6 @@
 package com.diogoandrebotas.librarycompanionwebapi.service
 
+import com.diogoandrebotas.librarycompanionwebapi.config.HttpClientConfig
 import com.diogoandrebotas.librarycompanionwebapi.model.GoogleBooksImageLinks
 import com.diogoandrebotas.librarycompanionwebapi.model.GoogleBooksItem
 import com.diogoandrebotas.librarycompanionwebapi.model.GoogleBooksResponse
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.junit.jupiter.MockitoExtension
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 
 @ExtendWith(MockitoExtension::class)
@@ -80,7 +82,11 @@ class GoogleBooksServiceTests {
             }
         }
 
-        val googleBooksService = GoogleBooksService(httpClient, mock())
+        val httpClientConfig = mock<HttpClientConfig> {
+            on { httpClient() } doReturn httpClient
+        }
+
+        val googleBooksService = GoogleBooksService(httpClientConfig)
 
         // When
         val actualResponse = runBlocking {
@@ -119,7 +125,11 @@ class GoogleBooksServiceTests {
             }
         }
 
-        val googleBooksService = GoogleBooksService(httpClient, mock())
+        val httpClientConfig = mock<HttpClientConfig> {
+            on { httpClient() } doReturn httpClient
+        }
+
+        val googleBooksService = GoogleBooksService(httpClientConfig)
 
         // When
         val actualResponse = runBlocking {
