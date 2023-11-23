@@ -18,6 +18,23 @@ services:
     depends_on:
       - database
 
+  tests:
+    build:
+      context: .
+      target: build
+    volumes:
+      - .:/test
+    command: /test/gradlew clean test
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://database:5432/postgres"
+      SPRING_DATASOURCE_USERNAME: "postgres"
+      SPRING_DATASOURCE_PASSWORD: "admin"
+      SPRING_JPA_HIBERNATE_DDL_AUTO: "create-drop"
+    depends_on:
+      - database
+
   database:
     image: postgres:latest
     ports:
