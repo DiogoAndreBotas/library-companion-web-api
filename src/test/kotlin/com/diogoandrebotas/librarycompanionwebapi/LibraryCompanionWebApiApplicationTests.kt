@@ -5,9 +5,6 @@ import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
 class LibraryCompanionWebApiApplicationTests {
-
 	@Test
-	fun contextLoads() {
-	}
-
+	fun contextLoads() {}
 }

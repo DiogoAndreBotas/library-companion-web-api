@@ -24,12 +24,8 @@ import org.mockito.kotlin.mock
 
 @ExtendWith(MockitoExtension::class)
 class GoogleBooksServiceTests {
-
-    // TODO change tests to use this type of description
-    // TODO needs huge refactor
     @Test
     fun `getBookWithIsbn returns GoogleBooksResponse when the book is found`() {
-        // Given
         val expectedResponse = GoogleBooksResponse(
             totalItems = 1,
             items = listOf(
@@ -81,25 +77,20 @@ class GoogleBooksServiceTests {
                 )
             }
         }
-
         val httpClientConfig = mock<HttpClientConfig> {
             on { httpClient() } doReturn httpClient
         }
-
         val googleBooksService = GoogleBooksService(httpClientConfig)
 
-        // When
         val actualResponse = runBlocking {
             googleBooksService.getBookWithIsbn("9780593099322")
         }
 
-        // Then
         assertEquals(expectedResponse, actualResponse)
     }
 
     @Test
     fun `getBookWithIsbn returns GoogleBooksResponse when the book is not found`() {
-        // Given
         val expectedResponse = GoogleBooksResponse(
             totalItems = 0,
             items = listOf()
@@ -131,13 +122,10 @@ class GoogleBooksServiceTests {
 
         val googleBooksService = GoogleBooksService(httpClientConfig)
 
-        // When
         val actualResponse = runBlocking {
             googleBooksService.getBookWithIsbn("9780593099322")
         }
 
-        // Then
         assertEquals(expectedResponse, actualResponse)
     }
-
 }
