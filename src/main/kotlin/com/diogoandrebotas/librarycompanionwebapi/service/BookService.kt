@@ -1,6 +1,7 @@
 package com.diogoandrebotas.librarycompanionwebapi.service
 
 import com.diogoandrebotas.librarycompanionwebapi.exception.BookAlreadyExistsException
+import com.diogoandrebotas.librarycompanionwebapi.exception.GoogleBooksApiException
 import com.diogoandrebotas.librarycompanionwebapi.model.Book
 import com.diogoandrebotas.librarycompanionwebapi.model.IsbnInput
 import com.diogoandrebotas.librarycompanionwebapi.repository.BookRepository
@@ -25,7 +26,7 @@ class BookService(
         val books = googleBooksService.getBookWithIsbn(isbn)
 
         if (books.items.isEmpty())
-            return Optional.empty()
+            throw GoogleBooksApiException("Book with ISBN $isbn not found in Google Books API")
 
         val bookResponse = books.items.first().volumeInfo
 
