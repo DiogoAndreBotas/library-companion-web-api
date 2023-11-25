@@ -1,6 +1,7 @@
 package com.diogoandrebotas.librarycompanionwebapi.service
 
 import com.diogoandrebotas.librarycompanionwebapi.exception.BookAlreadyExistsException
+import com.diogoandrebotas.librarycompanionwebapi.exception.BookNotFoundException
 import com.diogoandrebotas.librarycompanionwebapi.exception.GoogleBooksApiException
 import com.diogoandrebotas.librarycompanionwebapi.model.*
 import com.diogoandrebotas.librarycompanionwebapi.repository.BookRepository
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.mock
 import java.util.*
 
@@ -89,15 +91,13 @@ class BookServiceTests {
     }
 
     @Test
-    fun `getBook returns an empty Optional when the Book does not exist in the database`() {
+    fun `getBook throws an exception when the Book does not exist in the database`() {
         val bookRepository = mock<BookRepository> {
-            on { findById("9780593099322") } doReturn Optional.empty()
+            on { findById("9780593099322") } doThrow BookNotFoundException("")
         }
         val bookService = BookService(mock<GoogleBooksService>(), bookRepository)
 
-        val actualBook = bookService.getBook("9780593099322")
-
-        assertEquals(Optional.empty<Book>(), actualBook)
+        assertThrows<BookNotFoundException> { bookService.getBook("9780593099322") }
     }
 
     @Test

@@ -17,21 +17,13 @@ class BookController(
     @GetMapping("/books/{isbn}")
     fun getBookById(@PathVariable isbn: String): ResponseEntity<Book> {
         val book = bookService.getBook(isbn)
-
-        return if (book.isEmpty)
-            ResponseEntity.notFound().build()
-        else
-            ResponseEntity.ok(book.get())
+        return ResponseEntity.ok(book.get())
     }
 
     @PostMapping("/books")
     fun addBookWithIsbn(@RequestBody isbnInput: IsbnInput): ResponseEntity<Book> {
         val book = bookService.addBookWithIsbn(isbnInput)
-
-        return if (book.isEmpty)
-            ResponseEntity.unprocessableEntity().build()
-        else
-            ResponseEntity.ok(book.get())
+        return ResponseEntity.ok(book.get())
     }
 
     @DeleteMapping("/books/{isbn}")
