@@ -1,36 +1,33 @@
 package com.diogoandrebotas.librarycompanionwebapi.service
 
-import com.diogoandrebotas.librarycompanionwebapi.exception.BookAlreadyExistsException
 import com.diogoandrebotas.librarycompanionwebapi.exception.BookNotFoundException
 import com.diogoandrebotas.librarycompanionwebapi.exception.GoogleBooksApiException
+import com.diogoandrebotas.librarycompanionwebapi.model.Author
 import com.diogoandrebotas.librarycompanionwebapi.model.Book
-import com.diogoandrebotas.librarycompanionwebapi.model.IsbnInput
+import com.diogoandrebotas.librarycompanionwebapi.repository.AuthorRepository
 import com.diogoandrebotas.librarycompanionwebapi.repository.BookRepository
 import org.springframework.stereotype.Service
 import java.util.*
+import kotlin.jvm.optionals.getOrElse
 
 @Service
 class BookService(
     private val googleBooksService: GoogleBooksService,
-    private val bookRepository: BookRepository
+    private val bookRepository: BookRepository,
+    private val authorRepository: AuthorRepository,
 ) {
     fun getBooks(): List<Book> = bookRepository.findAll()
 
-    fun getBook(isbn: String): Optional<Book> {
-        val book = bookRepository.findById(isbn)
-
-        if (book.isEmpty) {
+    fun getBook(isbn: String): Book {
+        return bookRepository.findById(isbn).getOrElse {
             throw BookNotFoundException("Book with ISBN $isbn not found")
         }
-
-        return book
     }
 
-    fun addBookWithIsbn(isbnInput: IsbnInput): Optional<Book> {
-        val isbn = isbnInput.isbn
-
-        if (bookRepository.findById(isbn).isPresent) {
-            throw BookAlreadyExistsException("Book with ISBN $isbn already exists")
+    fun addBook(isbn: String): Optional<Book> {
+        val databaseBook = bookRepository.findById(isbn)
+        if (databaseBook.isPresent) {
+            return databaseBook
         }
 
         val books = googleBooksService.getBookWithIsbn(isbn)
@@ -41,11 +38,19 @@ class BookService(
 
         val bookResponse = books.items.first().volumeInfo
 
+        val authors = bookResponse.authors.map {
+            authorRepository.findById(it).orElse(
+                authorRepository.save(
+                    Author(name = it)
+                )
+            )
+        }.toMutableList()
+
         return Optional.of(
             bookRepository.save(
                 Book(
                     title = bookResponse.title,
-                    authors = bookResponse.authors,
+                    authors = authors,
                     pages = bookResponse.pageCount,
                     isbn = isbn,
                     publishDate = bookResponse.publishedDate,
@@ -54,6 +59,4 @@ class BookService(
             )
         )
     }
-
-    fun deleteBook(isbn: String): Unit = bookRepository.deleteById(isbn)
 }

@@ -7,28 +7,25 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/books")
 class BookController(
     private val bookService: BookService
 ) {
-    @GetMapping("/books")
-    fun getBooks() = bookService.getBooks()
+    @GetMapping
+    fun getBooks(): ResponseEntity<List<Book>> {
+        val books = bookService.getBooks()
+        return ResponseEntity.ok(books)
+    }
 
-    @GetMapping("/books/{isbn}")
-    fun getBookById(@PathVariable isbn: String): ResponseEntity<Book> {
+    @GetMapping("/{isbn}")
+    fun getBook(@PathVariable isbn: String): ResponseEntity<Book> {
         val book = bookService.getBook(isbn)
-        return ResponseEntity.ok(book.get())
+        return ResponseEntity.ok(book)
     }
 
-    @PostMapping("/books")
-    fun addBookWithIsbn(@RequestBody isbnInput: IsbnInput): ResponseEntity<Book> {
-        val book = bookService.addBookWithIsbn(isbnInput)
+    @PostMapping
+    fun addBook(@RequestBody isbnInput: IsbnInput): ResponseEntity<Book> {
+        val book = bookService.addBook(isbnInput.isbn)
         return ResponseEntity.ok(book.get())
-    }
-
-    @DeleteMapping("/books/{isbn}")
-    fun deleteBook(@PathVariable isbn: String): ResponseEntity<Void> {
-        bookService.deleteBook(isbn)
-        return ResponseEntity.noContent().build()
     }
 }

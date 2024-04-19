@@ -7,14 +7,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 
 @ControllerAdvice
 class GlobalExceptionHandler {
+    @ExceptionHandler(BookAlreadyExistsException::class, UserContainsBookException::class)
+    fun handleConflictException(): ResponseEntity<Unit> = ResponseEntity.status(HttpStatus.CONFLICT).build()
 
-    @ExceptionHandler(BookAlreadyExistsException::class)
-    fun handleBookAlreadyExistsException(): ResponseEntity<Unit> = ResponseEntity.status(HttpStatus.CONFLICT).build()
-
-    @ExceptionHandler(BookNotFoundException::class)
-    fun handleBookNotFoundException(): ResponseEntity<Unit> = ResponseEntity.notFound().build()
+    @ExceptionHandler(BookNotFoundException::class, UserNotFoundException::class)
+    fun handleNotFoundException(): ResponseEntity<Unit> = ResponseEntity.notFound().build()
 
     @ExceptionHandler(GoogleBooksApiException::class)
     fun handleGoogleBooksApiException(): ResponseEntity<Unit> = ResponseEntity.unprocessableEntity().build()
-
 }

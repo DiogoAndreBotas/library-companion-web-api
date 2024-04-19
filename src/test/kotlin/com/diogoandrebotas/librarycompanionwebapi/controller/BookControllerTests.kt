@@ -2,6 +2,7 @@ package com.diogoandrebotas.librarycompanionwebapi.controller
 
 import com.diogoandrebotas.librarycompanionwebapi.exception.BookNotFoundException
 import com.diogoandrebotas.librarycompanionwebapi.exception.GoogleBooksApiException
+import com.diogoandrebotas.librarycompanionwebapi.model.Author
 import com.diogoandrebotas.librarycompanionwebapi.model.Book
 import com.diogoandrebotas.librarycompanionwebapi.model.IsbnInput
 import com.diogoandrebotas.librarycompanionwebapi.service.BookService
@@ -23,7 +24,7 @@ class BookControllerTests {
         val expectedBooks = listOf(
             Book(
                 title = "Dune",
-                authors = listOf("Frank Herbert"),
+                authors = mutableListOf(Author(name = "Frank Herbert")),
                 pages = 658,
                 isbn = "9780593099322",
                 publishDate = "2019-10",
@@ -31,7 +32,7 @@ class BookControllerTests {
             ),
             Book(
                 title = "Dune Messiah",
-                authors = listOf("Frank Herbert"),
+                authors = mutableListOf(Author(name = "Frank Herbert")),
                 pages = 337,
                 isbn = "9780593098233",
                 publishDate = "2019-10",
@@ -39,7 +40,7 @@ class BookControllerTests {
             ),
             Book(
                 title = "Children of Dune",
-                authors = listOf("Frank Herbert"),
+                authors = mutableListOf(Author(name = "Frank Herbert")),
                 pages = 408,
                 isbn = "9780593098240",
                 publishDate = "2019-10",
@@ -73,18 +74,18 @@ class BookControllerTests {
     fun `getBookById returns 200 OK with a Book as the response body`() {
         val expectedBook = Book(
             title = "Dune",
-            authors = listOf("Frank Herbert"),
+            authors = mutableListOf(Author(name = "Frank Herbert")),
             pages = 658,
             isbn = "9780593099322",
             publishDate = "2019-10",
             imageUrl = "https://books.google.com/books/dune_url"
         )
         val bookService = mock<BookService> {
-            on { getBook("9780593099322") } doReturn Optional.of(expectedBook)
+            on { getBook("9780593099322") } doReturn expectedBook
         }
         val bookController = BookController(bookService)
 
-        val response = bookController.getBookById("9780593099322")
+        val response = bookController.getBook("9780593099322")
         val actualBook = response.body
 
         assertEquals(HttpStatus.OK, response.statusCode)
@@ -98,14 +99,14 @@ class BookControllerTests {
         }
         val bookController = BookController(bookService)
 
-        assertThrows<BookNotFoundException> { bookController.getBookById("9780593099322") }
+        assertThrows<BookNotFoundException> { bookController.getBook("9780593099322") }
     }
 
     @Test
     fun `addBookWithIsbn returns 200 OK when the Book is created`() {
         val expectedBook = Book(
             title = "Dune",
-            authors = listOf("Frank Herbert"),
+            authors = mutableListOf(Author(name = "Frank Herbert")),
             pages = 658,
             isbn = "9780593099322",
             publishDate = "2019-10",
@@ -113,11 +114,11 @@ class BookControllerTests {
         )
         val isbnInput = IsbnInput("9780593099322")
         val bookService = mock<BookService> {
-            on { addBookWithIsbn(isbnInput) } doReturn Optional.of(expectedBook)
+            on { addBook("9780593099322") } doReturn Optional.of(expectedBook)
         }
         val bookController = BookController(bookService)
 
-        val response = bookController.addBookWithIsbn(isbnInput)
+        val response = bookController.addBook(isbnInput)
         val actualBook = response.body
 
         assertEquals(HttpStatus.OK, response.statusCode)
@@ -128,19 +129,10 @@ class BookControllerTests {
     fun `addBookWithIsbn throws an exception when there is an error related with Google Books API`() {
         val isbnInput = IsbnInput("9780593099322")
         val bookService = mock<BookService> {
-            on { addBookWithIsbn(isbnInput) } doThrow GoogleBooksApiException("")
+            on { addBook("9780593099322") } doThrow GoogleBooksApiException("")
         }
         val bookController = BookController(bookService)
 
-        assertThrows<GoogleBooksApiException> { bookController.addBookWithIsbn(isbnInput) }
-    }
-
-    @Test
-    fun `deleteBook returns 204 No Content`() {
-        val bookController = BookController(mock<BookService>())
-
-        val response = bookController.deleteBook("9780593099322")
-
-        assertEquals(HttpStatus.NO_CONTENT, response.statusCode)
+        assertThrows<GoogleBooksApiException> { bookController.addBook(isbnInput) }
     }
 }

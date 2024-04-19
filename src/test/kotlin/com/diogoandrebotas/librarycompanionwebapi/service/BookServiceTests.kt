@@ -4,16 +4,14 @@ import com.diogoandrebotas.librarycompanionwebapi.exception.BookAlreadyExistsExc
 import com.diogoandrebotas.librarycompanionwebapi.exception.BookNotFoundException
 import com.diogoandrebotas.librarycompanionwebapi.exception.GoogleBooksApiException
 import com.diogoandrebotas.librarycompanionwebapi.model.*
+import com.diogoandrebotas.librarycompanionwebapi.repository.AuthorRepository
 import com.diogoandrebotas.librarycompanionwebapi.repository.BookRepository
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.junit.jupiter.MockitoExtension
-import org.mockito.kotlin.any
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.doThrow
-import org.mockito.kotlin.mock
+import org.mockito.kotlin.*
 import java.util.*
 
 @ExtendWith(MockitoExtension::class)
@@ -24,7 +22,7 @@ class BookServiceTests {
         val expectedBooks = listOf(
             Book(
                 title = "Dune",
-                authors = listOf("Frank Herbert"),
+                authors = mutableListOf(Author(name = "Frank Herbert")),
                 pages = 658,
                 isbn = "9780593099322",
                 publishDate = "2019-10",
@@ -32,7 +30,7 @@ class BookServiceTests {
             ),
             Book(
                 title = "Dune Messiah",
-                authors = listOf("Frank Herbert"),
+                authors = mutableListOf(Author(name = "Frank Herbert")),
                 pages = 337,
                 isbn = "9780593098233",
                 publishDate = "2019-10",
@@ -40,7 +38,7 @@ class BookServiceTests {
             ),
             Book(
                 title = "Children of Dune",
-                authors = listOf("Frank Herbert"),
+                authors = mutableListOf(Author(name = "Frank Herbert")),
                 pages = 408,
                 isbn = "9780593098240",
                 publishDate = "2019-10",
@@ -50,7 +48,8 @@ class BookServiceTests {
         val bookRepository = mock<BookRepository> {
             on { findAll() } doReturn expectedBooks
         }
-        val bookService = BookService(mock<GoogleBooksService>(), bookRepository)
+        val authorRepository = mock<AuthorRepository>()
+        val bookService = BookService(mock<GoogleBooksService>(), bookRepository, authorRepository)
 
         val actualBooks = bookService.getBooks()
 
@@ -63,7 +62,8 @@ class BookServiceTests {
         val bookRepository = mock<BookRepository> {
             on { findAll() } doReturn expectedBooks
         }
-        val bookService = BookService(mock<GoogleBooksService>(), bookRepository)
+        val authorRepository = mock<AuthorRepository>()
+        val bookService = BookService(mock<GoogleBooksService>(), bookRepository, authorRepository)
 
         val actualBooks = bookService.getBooks()
 
@@ -74,7 +74,7 @@ class BookServiceTests {
     fun `getBook returns a Book when it exists in the database`() {
         val expectedBook = Book(
             title = "Dune",
-            authors = listOf("Frank Herbert"),
+            authors = mutableListOf(Author(name = "Frank Herbert")),
             pages = 658,
             isbn = "9780593099322",
             publishDate = "2019-10",
@@ -83,9 +83,10 @@ class BookServiceTests {
         val bookRepository = mock<BookRepository> {
             on { findById("9780593099322") } doReturn Optional.of(expectedBook)
         }
-        val bookService = BookService(mock<GoogleBooksService>(), bookRepository)
+        val authorRepository = mock<AuthorRepository>()
+        val bookService = BookService(mock<GoogleBooksService>(), bookRepository, authorRepository)
 
-        val actualBook = bookService.getBook("9780593099322").get()
+        val actualBook = bookService.getBook("9780593099322")
 
         assertEquals(expectedBook, actualBook)
     }
@@ -95,16 +96,17 @@ class BookServiceTests {
         val bookRepository = mock<BookRepository> {
             on { findById("9780593099322") } doThrow BookNotFoundException("")
         }
-        val bookService = BookService(mock<GoogleBooksService>(), bookRepository)
+        val authorRepository = mock<AuthorRepository>()
+        val bookService = BookService(mock<GoogleBooksService>(), bookRepository, authorRepository)
 
         assertThrows<BookNotFoundException> { bookService.getBook("9780593099322") }
     }
 
     @Test
-    fun `addBookWithIsbn saves the Book to the database when it exists in Google Books API`() {
+    fun `addBook saves the Book to the database when it exists in Google Books API`() {
         val expectedBook = Book(
             title = "Dune",
-            authors = listOf("Frank Herbert"),
+            authors = mutableListOf(Author(name = "Frank Herbert")),
             pages = 658,
             isbn = "9780593099322",
             publishDate = "2019-10",
@@ -124,25 +126,29 @@ class BookServiceTests {
                 )
             )
         )
+        val googleBooksService = mock<GoogleBooksService> {
+            on { getBookWithIsbn("9780593099322") } doReturn googleBooksResponse
+        }
         val bookRepository = mock<BookRepository> {
             on { findById("9780593099322") } doReturn Optional.empty()
             on { save(any<Book>()) } doReturn expectedBook
         }
-        val googleBooksService = mock<GoogleBooksService> {
-            on { getBookWithIsbn("9780593099322") } doReturn googleBooksResponse
+        val authorRepository = mock<AuthorRepository> {
+            on { findById("Frank Herbert") } doReturn Optional.empty()
+            on { save(any()) } doReturn Author(name = "Frank Herbert")
         }
-        val bookService = BookService(googleBooksService, bookRepository)
+        val bookService = BookService(googleBooksService, bookRepository, authorRepository)
 
-        val actualBook = bookService.addBookWithIsbn(IsbnInput("9780593099322")).get()
+        val actualBook = bookService.addBook("9780593099322").get()
 
         assertEquals(expectedBook, actualBook)
     }
 
     @Test
-    fun `addBookWithIsbn throws BookAlreadyExistsException when it exists in the database`() {
+    fun `addBook throws BookAlreadyExistsException when it exists in the database`() {
         val book = Book(
             title = "Dune",
-            authors = listOf("Frank Herbert"),
+            authors = mutableListOf(Author(name = "Frank Herbert")),
             pages = 658,
             isbn = "9780593099322",
             publishDate = "2019-10",
@@ -151,13 +157,14 @@ class BookServiceTests {
         val bookRepository = mock<BookRepository> {
             on { findById("9780593099322") } doReturn Optional.of(book)
         }
-        val bookService = BookService(mock<GoogleBooksService>(), bookRepository)
+        val authorRepository = mock<AuthorRepository>()
+        val bookService = BookService(mock<GoogleBooksService>(), bookRepository, authorRepository)
 
-        assertThrows<BookAlreadyExistsException> { bookService.addBookWithIsbn(IsbnInput("9780593099322")) }
+        assertThrows<BookAlreadyExistsException> { bookService.addBook("9780593099322") }
     }
 
     @Test
-    fun `addBookWithIsbn throws GoogleBooksApiException when it is not found in Google Books API`() {
+    fun `addBook throws GoogleBooksApiException when it is not found in Google Books API`() {
         val googleBooksResponse = GoogleBooksResponse(
             totalItems = 0,
             items = emptyList()
@@ -168,9 +175,10 @@ class BookServiceTests {
         val googleBooksService = mock<GoogleBooksService> {
             on { getBookWithIsbn("9780593099322") } doReturn googleBooksResponse
         }
-        val bookService = BookService(googleBooksService, bookRepository)
+        val authorRepository = mock<AuthorRepository>()
+        val bookService = BookService(googleBooksService, bookRepository, authorRepository)
 
-        assertThrows<GoogleBooksApiException> { bookService.addBookWithIsbn(IsbnInput("9780593099322")) }
+        assertThrows<GoogleBooksApiException> { bookService.addBook("9780593099322") }
     }
 
 }
