@@ -1,6 +1,20 @@
 version: "3.8"
 
 services:
+  web_api_prod:
+    build:
+      context: .
+      target: build
+    volumes:
+      - .:/web
+    command: /web/gradlew bootRun
+    ports:
+      - "8080:8080"
+    restart: always
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://ep-delicate-flower-a28ln3t5.eu-central-1.aws.neon.tech/library-companion"
+      SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
+
   web_api:
     build:
       context: .

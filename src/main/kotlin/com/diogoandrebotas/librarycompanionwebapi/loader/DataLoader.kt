@@ -11,11 +11,11 @@ class DataLoader(
     private val userRepository: UserRepository
 ) : ApplicationRunner {
     override fun run(args: ApplicationArguments?) {
-        userRepository.saveAll(
-            listOf(
-                AppUser(1, "ana_rodrigues"),
-                AppUser(2, "diogo_botas")
-            )
-        )
+        if (userRepository.findById(1).isEmpty) {
+            userRepository.save(AppUser(1, "ana_rodrigues"))
+        }
+        if (userRepository.findById(2).isEmpty) {
+            userRepository.save(AppUser(2, "diogo_botas"))
+        }
     }
 }
